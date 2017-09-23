@@ -69,7 +69,8 @@ function Get-VBoxVm()
         $a = $a.Trim() -replace '"'
         $b = ("{" + $b).Trim() -replace '[{}]' 
 
-        New-Object -TypeName PSObject -Property @{Name = $a; UUID = $b}
+        #New-Object -TypeName PSObject -Property @{Name = $a; UUID = $b}
+        Get-VBoxVmInfo -name $b
     }
 }
 
@@ -91,4 +92,25 @@ function Get-VBoxSysProp()
 function Get-VBoxVersion()
 {
     New-Object -TypeName PSObject -Property @{Version = (VBoxManage --version)} 
+}
+
+function Get-VBoxVmInfo()
+{
+    param (
+        [Parameter(Mandatory=$true)][string]$name
+    )
+
+    $obj = New-Object -TypeName PSObject
+
+    VBoxManage showvminfo $name --machinereadable --details | ForEach-Object {
+        if([string]::IsNullOrEmpty($_)) { return }
+
+        $a, $b = ($_).Split("=")
+        $a = $a.Trim() -replace '"'
+        $b = $b.Trim() -replace '"'
+        
+        Add-Member -MemberType NoteProperty -InputObject $obj -Name $a -Value $b
+    }
+
+    $obj
 }

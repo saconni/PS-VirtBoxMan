@@ -1,5 +1,5 @@
 # PS-VirtBoxMan
-PowerShell useful functions around VirtualBoxManage command-line tool
+PowerShell useful functions around VBoxManage command-line tool
 
 ### Quick Tour
 ```

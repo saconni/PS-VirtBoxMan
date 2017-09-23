@@ -3,9 +3,7 @@
     VBoxManage list hostonlyifs | ForEach-Object {
         if([string]::IsNullOrEmpty($_)) { return }
 
-        $a, $b = ($_).Split(":")
-        $a = $a.Trim()
-        $b = ($b -join ":").Trim();
+        $a, $b = $_ -split ':', 2 | foreach { $_.trim() }
 
         if($a -ieq "Name")
         {
@@ -26,9 +24,7 @@ function Get-VBoxHdd()
     VBoxManage list hdds | ForEach-Object {
         if([string]::IsNullOrEmpty($_)) { return }
 
-        $a, $b = ($_).Split(":")
-        $a = $a.Trim()
-        $b = ($b -join ":").Trim();
+        $a, $b = $_ -split ':', 2 | foreach { $_.trim() }
 
         if($a -ieq "UUID")
         {
@@ -49,9 +45,7 @@ function Get-VBoxIntNet()
     VBoxManage list intnets | ForEach-Object {
         if([string]::IsNullOrEmpty($_)) { return }
 
-        $a, $b = ($_).Split(":")
-        $a = $a.Trim()
-        $b = $b.Trim();
+        $a, $b = $_ -split ':', 2 | foreach { $_.trim() }
 
         if($a -ieq "Name")
         {
@@ -65,11 +59,10 @@ function Get-VBoxVm()
     VBoxManage list vms | ForEach-Object {
         if([string]::IsNullOrEmpty($_)) { return }
 
-        $a, $b = ($_).Split("{") 
-        $a = $a.Trim() -replace '"'
-        $b = ("{" + $b).Trim() -replace '[{}]' 
+        $a, $b = $_ -split '{', 2 | foreach { $_.trim() }
+        $a = $a -replace '"'
+        $b = $b -replace '}' 
 
-        #New-Object -TypeName PSObject -Property @{Name = $a; UUID = $b}
         Get-VBoxVmInfo -name $b
     }
 }
@@ -80,9 +73,7 @@ function Get-VBoxSysProp()
     VBoxManage list systemproperties | ForEach-Object {
         if([string]::IsNullOrEmpty($_)) { return }
 
-        $a, $b = ($_).Split(":")
-        $a = $a.Trim()
-        $b = ($b -join ":").Trim();
+        $a, $b = $_ -split ':', 2 | foreach { $_.trim() }
         
         Add-Member -MemberType NoteProperty -InputObject $obj -Name $a -Value $b
     }
@@ -101,16 +92,12 @@ function Get-VBoxVmInfo()
     )
 
     $obj = New-Object -TypeName PSObject
-
     VBoxManage showvminfo $name --machinereadable --details | ForEach-Object {
         if([string]::IsNullOrEmpty($_)) { return }
 
-        $a, $b = ($_).Split("=")
-        $a = $a.Trim() -replace '"'
-        $b = $b.Trim() -replace '"'
+        $a, $b = $_ -split '=', 2 | foreach { $_.trim() -replace '"' }
         
         Add-Member -MemberType NoteProperty -InputObject $obj -Name $a -Value $b
     }
-
     $obj
 }
